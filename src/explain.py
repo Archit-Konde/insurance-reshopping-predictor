@@ -8,6 +8,8 @@ for tree-based models. Provides:
 - Counterfactual suggestions (single most actionable change)
 """
 
+import copy
+
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -78,13 +80,14 @@ def get_waterfall_figure(model, input_df, feature_names, explanation=None):
     if explanation is None:
         explanation = get_shap_values(model, input_df)
 
-    # Use human-readable labels
+    # Work on a copy to avoid mutating shared explanation object
+    plot_explanation = copy.deepcopy(explanation)
     display_names = [FEATURE_LABELS.get(f, f) for f in feature_names]
-    explanation.feature_names = display_names
+    plot_explanation.feature_names = display_names
 
     fig, ax = plt.subplots(figsize=(10, 6))
     plt.sca(ax)
-    shap.plots.waterfall(explanation[0], show=False, max_display=10)
+    shap.plots.waterfall(plot_explanation[0], show=False, max_display=10)
     plt.title("What drives your re-shopping score", fontsize=14, pad=15)
     plt.tight_layout()
 

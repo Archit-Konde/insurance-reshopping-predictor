@@ -13,6 +13,6 @@ COPY . .
 
 EXPOSE 7860
 
-HEALTHCHECK CMD curl --fail http://localhost:7860/_stcore/health
+HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:7860/_stcore/health')"
 
 ENTRYPOINT ["streamlit", "run", "app/app.py", "--server.port=7860", "--server.address=0.0.0.0", "--server.headless=true"]
