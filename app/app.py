@@ -37,9 +37,26 @@ st.set_page_config(
 )
 
 # Custom CSS for terminal theme
+# Preload Google Fonts via <link> (loads once, caches) instead of @import in <style>
+# which re-triggers font loading on every Streamlit rerun causing FOUC jitter.
+st.markdown(
+    '<link rel="preconnect" href="https://fonts.googleapis.com">'
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">',
+    unsafe_allow_html=True,
+)
+
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+    /* Reserve scrollbar width to prevent layout oscillation.
+       Without this, content that triggers a scrollbar shrinks the viewport,
+       which can reflow content shorter, removing the scrollbar, expanding
+       the viewport, reflowing taller, re-triggering the scrollbar — infinite
+       left-right jitter loop. */
+    html {
+        scrollbar-gutter: stable;
+        overflow-y: scroll;
+    }
 
     .stApp {
         font-family: 'JetBrains Mono', monospace;
@@ -148,7 +165,7 @@ with tab1:
                 render_probability_gauge(pred["probability"])
 
                 st.markdown("#### SHAP Explanation")
-                st.image(pred["shap_png"], use_container_width=True)
+                st.image(pred["shap_png"])
 
                 render_top_factors(pred["factors"])
 
