@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — Insurance Re-Shopping Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1e1e1e;
+            --surface: #252526;
+            --text: #d4d4d4;
+            --accent: #C9A84C;
+            --muted: #858585;
+            --border: #3e3e42;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+        }
+        .error-code {
+            font-size: 6rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+        }
+        .error-msg {
+            color: var(--muted);
+            font-size: 1rem;
+            margin: 16px 0 32px;
+        }
+        .terminal-block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 28px;
+            text-align: left;
+            font-size: 0.85rem;
+            line-height: 1.8;
+        }
+        .prompt { color: var(--accent); }
+        .cmd { color: var(--text); }
+        .comment { color: var(--muted); }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        a:hover { text-decoration: underline; }
+        .back-link {
+            margin-top: 32px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-code">404</div>
+    <div class="error-msg">Page not found. The route you requested doesn't exist.</div>
+    <div class="terminal-block">
+        <span class="prompt">$</span> <span class="cmd">cd /insurance-reshopping-predictor</span><br>
+        <span class="comment"># Try one of these instead:</span><br>
+        <span class="prompt">$</span> <span class="cmd">open <a href="./">project home</a></span><br>
+        <span class="prompt">$</span> <span class="cmd">open <a href="https://huggingface.co/spaces/architechs/insurance-reshopping-predictor" target="_blank">live demo</a></span><br>
+        <span class="prompt">$</span> <span class="cmd">open <a href="https://github.com/Archit-Konde/insurance-reshopping-predictor" target="_blank">github repo</a></span><br>
+        <span class="prompt">$</span> <span class="cmd">open <a href="https://archit-konde.github.io/">portfolio</a></span>
+    </div>
+    <div class="back-link">
+        <a href="./">&lt;- back to project</a>
+    </div>
+</body>
+</html>

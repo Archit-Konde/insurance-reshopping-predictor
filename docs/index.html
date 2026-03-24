@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Re-Shopping Predictor</title>
+    <meta name="description" content="Predicts whether you'd benefit from re-shopping your car insurance — using ML trained on 381K real insurance profiles.">
+    <meta property="og:title" content="Insurance Re-Shopping Predictor">
+    <meta property="og:description" content="Predicts whether you'd benefit from re-shopping your car insurance — using ML trained on 381K real insurance profiles.">
+    <meta property="og:type" content="website">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1e1e1e;
+            --surface: #252526;
+            --text: #d4d4d4;
+            --accent: #C9A84C;
+            --muted: #858585;
+            --border: #3e3e42;
+            --green: #28c840;
+        }
+
+        body.matrix-theme {
+            --bg: #000000;
+            --surface: #0a0a0a;
+            --text: #00ff41;
+            --accent: #00ff41;
+            --muted: #008f11;
+            --border: #003b00;
+        }
+        body.matrix-theme * {
+            text-shadow: 0 0 5px rgba(0, 255, 65, 0.4);
+        }
+        body.matrix-theme .cmd-palette,
+        body.matrix-theme .cmd-modal {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        /* ── Nav ────────────────────────────────────── */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--accent); }
+        .kbd-hint {
+            font-size: 0.75rem;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .kbd-hint:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ── Boot Sequence ──────────────────────────── */
+        #boot-screen {
+            padding: 40px 24px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .boot-line {
+            opacity: 0;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .boot-line.visible { opacity: 1; }
+        .boot-ok { color: var(--green); }
+        .boot-module { color: var(--accent); }
+        .boot-info { color: var(--muted); }
+
+        /* ── Main Content ──────────────────────────── */
+        .main-content {
+            display: none;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+        .main-content.visible { display: block; }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .hero h1 {
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+        .hero p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .tag {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--muted);
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 28px;
+        }
+        .cta-btn {
+            padding: 10px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .cta-primary {
+            background: var(--accent);
+            color: var(--bg);
+            border: 1px solid var(--accent);
+        }
+        .cta-primary:hover { opacity: 0.85; }
+        .cta-secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        .cta-secondary:hover { background: var(--surface); }
+
+        /* ── Sections ──────────────────────────────── */
+        .section {
+            margin-bottom: 48px;
+        }
+        .section h2 {
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .section p, .section li {
+            color: var(--text);
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+        .section ul { padding-left: 20px; }
+        .section li { margin-bottom: 6px; }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .metric-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ── Terminal / CLI ─────────────────────────── */
+        .terminal-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 48px;
+            overflow: hidden;
+        }
+        .terminal-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+        .terminal-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+        }
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+        .terminal-title {
+            color: var(--muted);
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+
+        .terminal-body {
+            padding: 16px;
+            min-height: 120px;
+            cursor: text;
+        }
+        .prompt-line {
+            display: flex;
+            align-items: center;
+        }
+        .prompt-prefix {
+            color: var(--accent);
+            margin-right: 8px;
+            white-space: nowrap;
+        }
+        #cli-input {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            outline: none;
+            flex: 1;
+            caret-color: var(--accent);
+        }
+        #cli-output {
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* ── Command Palette ───────────────────────── */
+        .cmd-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 999;
+            justify-content: center;
+            padding-top: 15vh;
+        }
+        .cmd-overlay.active { display: flex; }
+        .cmd-modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 520px;
+            max-height: 420px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .cmd-search {
+            width: 100%;
+            padding: 16px 20px;
+            background: none;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .cmd-results {
+            max-height: 340px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .cmd-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .cmd-item:hover, .cmd-item.selected { background: var(--bg); }
+        .cmd-icon {
+            color: var(--accent);
+            font-weight: 700;
+            min-width: 28px;
+            text-align: center;
+        }
+        .cmd-label { color: var(--text); }
+        .cmd-hint {
+            margin-left: auto;
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .cmd-easter {
+            padding: 16px 20px;
+            color: var(--accent);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* ── Footer ────────────────────────────────── */
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--muted);
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border);
+            margin-top: 48px;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.3rem; }
+            .cta-buttons { flex-direction: column; align-items: center; }
+            .metric-grid { grid-template-columns: 1fr 1fr; }
+            .cmd-modal { width: 95%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Nav -->
+    <nav>
+        <span class="nav-brand">archit@portfolio:~$</span>
+        <div class="nav-links">
+            <a href="https://huggingface.co/spaces/architechs/insurance-reshopping-predictor" target="_blank">demo</a>
+            <a href="https://github.com/Archit-Konde/insurance-reshopping-predictor" target="_blank">github</a>
+            <a href="https://archit-konde.github.io/pages/blog/insurance-reshopping-predictor.html">writeup</a>
+            <a href="https://archit-konde.github.io/">portfolio</a>
+            <span class="kbd-hint" onclick="togglePalette()">Ctrl+K</span>
+        </div>
+    </nav>
+
+    <!-- Boot Screen -->
+    <div id="boot-screen">
+        <div class="boot-line" data-delay="100"><span class="boot-info">[boot]</span> Insurance Re-Shopping Predictor v1.0.0</div>
+        <div class="boot-line" data-delay="300"><span class="boot-info">[init]</span> Loading modules...</div>
+        <div class="boot-line" data-delay="500"><span class="boot-module">  loading data_quality.py</span> <span class="boot-ok">[OK]</span></div>
+        <div class="boot-line" data-delay="700"><span class="boot-module">  loading preprocessing.py</span> <span class="boot-ok">[OK]</span></div>
+        <div class="boot-line" data-delay="900"><span class="boot-module">  loading train.py</span> <span class="boot-ok">[OK]</span></div>
+        <div class="boot-line" data-delay="1100"><span class="boot-module">  loading explain.py</span> <span class="boot-ok">[OK]</span></div>
+        <div class="boot-line" data-delay="1300"><span class="boot-module">  loading app.py</span> <span class="boot-ok">[OK]</span></div>
+        <div class="boot-line" data-delay="1600"><span class="boot-info">[model]</span> Loading LightGBM classifier... <span class="boot-ok">[OK]</span></div>
+        <div class="boot-line" data-delay="1900"><span class="boot-info">[model]</span> Loading SHAP TreeExplainer... <span class="boot-ok">[OK]</span></div>
+        <div class="boot-line" data-delay="2200"><span class="boot-info">[data]</span> 381,109 profiles loaded</div>
+        <div class="boot-line" data-delay="2500"><span class="boot-info">[quality]</span> Data quality score: 100/100</div>
+        <div class="boot-line" data-delay="2800"><span class="boot-ok">[ready]</span> Serving on port 8501</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <div class="hero">
+            <h1>$ insurance-reshopping-predictor</h1>
+            <p>Predicts whether you'd benefit from re-shopping your car insurance — using ML trained on 381K real insurance profiles.</p>
+            <div class="tags">
+                <span class="tag">python</span>
+                <span class="tag">lightgbm</span>
+                <span class="tag">shap</span>
+                <span class="tag">streamlit</span>
+                <span class="tag">scikit-learn</span>
+                <span class="tag">pandas</span>
+            </div>
+            <div class="cta-buttons">
+                <a class="cta-btn cta-primary" href="https://huggingface.co/spaces/architechs/insurance-reshopping-predictor" target="_blank">Try Live Demo</a>
+                <a class="cta-btn cta-secondary" href="https://github.com/Archit-Konde/insurance-reshopping-predictor" target="_blank">View Source</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>// overview</h2>
+            <p>Built for the Jerry.ai Junior Applied Data Scientist application. Jerry's PriceProtect product predicts when customers should re-shop their car insurance — this project demonstrates the same capability end-to-end: data quality analysis, feature engineering, LightGBM classification, and SHAP-powered explainability.</p>
+        </div>
+
+        <div class="section">
+            <h2>// key metrics</h2>
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-value">381K</div>
+                    <div class="metric-label">training profiles</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">100</div>
+                    <div class="metric-label">data quality score</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">0.847</div>
+                    <div class="metric-label">test ROC-AUC</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">10</div>
+                    <div class="metric-label">engineered features</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>// architecture</h2>
+            <p>raw CSV -> DataQualityReport -> preprocessing pipeline -> LightGBM -> SHAP explainer -> Streamlit app</p>
+            <ul>
+                <li><strong>Data Quality First</strong> — 8 validation checks with weighted quality score, SQL-style audit queries</li>
+                <li><strong>Preprocessing</strong> — ordinal encoding, log transforms, StandardScaler, SMOTE (train-only)</li>
+                <li><strong>Model</strong> — LightGBM with GridSearchCV hyperparameter tuning</li>
+                <li><strong>Explainability</strong> — SHAP waterfall charts, plain-English factor descriptions, counterfactual tips</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>// data quality philosophy</h2>
+            <p>This project treats data quality as the primary engineering concern, not model accuracy. The DataQualityReport runs 8 categories of checks — schema validation, missing values, class balance, cardinality, range violations, duplicate detection, suspicious pattern flagging, and a weighted composite score — before any modeling begins.</p>
+        </div>
+
+        <!-- Interactive Terminal -->
+        <div class="terminal-container">
+            <div class="terminal-bar">
+                <span class="terminal-dot dot-red"></span>
+                <span class="terminal-dot dot-yellow"></span>
+                <span class="terminal-dot dot-green"></span>
+                <span class="terminal-title">archit@predictor ~ terminal</span>
+            </div>
+            <div class="terminal-body" id="terminal-body">
+                <div id="cli-output"></div>
+                <div class="prompt-line">
+                    <span class="prompt-prefix">$</span>
+                    <input type="text" id="cli-input" placeholder="type 'help' for commands..." autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Command Palette -->
+    <div class="cmd-overlay" id="cmd-overlay">
+        <div class="cmd-modal">
+            <input type="text" class="cmd-search" id="cmd-search" placeholder="Type a command..." autocomplete="off" spellcheck="false">
+            <div class="cmd-results" id="cmd-results"></div>
+        </div>
+    </div>
+
+    <footer>
+        Built by <a href="https://archit-konde.github.io/">Archit Konde</a> | 2026 |
+        <a href="https://github.com/Archit-Konde/insurance-reshopping-predictor">GitHub</a>
+    </footer>
+
+    <script>
+    /* ═══════════════════════════════════════════════
+       Boot Sequence
+       ═══════════════════════════════════════════════ */
+    (function() {
+        if (sessionStorage.getItem('boot-seen')) {
+            document.getElementById('boot-screen').style.display = 'none';
+            document.getElementById('main-content').classList.add('visible');
+            return;
+        }
+
+        const lines = document.querySelectorAll('.boot-line');
+        let maxDelay = 0;
+
+        lines.forEach(line => {
+            const delay = parseInt(line.dataset.delay) || 0;
+            if (delay > maxDelay) maxDelay = delay;
+            setTimeout(() => line.classList.add('visible'), delay);
+        });
+
+        setTimeout(() => {
+            sessionStorage.setItem('boot-seen', '1');
+            document.getElementById('boot-screen').style.display = 'none';
+            document.getElementById('main-content').classList.add('visible');
+        }, maxDelay + 800);
+    })();
+
+    /* ═══════════════════════════════════════════════
+       Interactive Terminal (CLI)
+       ═══════════════════════════════════════════════ */
+    const cliInput = document.getElementById('cli-input');
+    const cliOutput = document.getElementById('cli-output');
+    let outputTimer = null;
+
+    const terminalBody = document.getElementById('terminal-body');
+    terminalBody.addEventListener('click', () => cliInput.focus());
+
+    const CLI_COMMANDS = {
+        help: `Available commands:
+  help        show this message
+  ls          list pipeline components
+  cat pipeline  show ML pipeline steps
+  cat stack     show tech stack
+  cat quality   show data quality report summary
+  cd demo     open live demo
+  clear       clear terminal
+  exit        back to portfolio
+  matrix      toggle matrix theme
+  reboot      replay boot sequence`,
+
+        ls: `data_quality.py   preprocessing.py   train.py
+explain.py        app.py             run_pipeline.sh
+tests/            models/            notebooks/`,
+
+        'cat pipeline': `Pipeline Steps:
+  1. DataQualityReport  ->  8 validation checks
+  2. encode_features    ->  ordinal + binary encoding
+  3. log_transform      ->  Annual_Premium (right-skewed)
+  4. StandardScaler     ->  continuous features
+  5. SMOTE              ->  balance 88/12 class split (train only)
+  6. LightGBM           ->  GridSearchCV tuning
+  7. SHAP Explainer     ->  waterfall + counterfactuals`,
+
+        'cat stack': `Tech Stack:
+  python        3.11
+  lightgbm      4.5.0    (tabular ML)
+  shap          0.46.0   (explainability)
+  streamlit     1.40.2   (web UI)
+  scikit-learn  1.5.2    (preprocessing)
+  pandas        2.2.3    (data wrangling)
+  imbalanced-learn 0.12.4 (SMOTE)`,
+
+        'cat quality': `Data Quality Report Summary:
+  Schema Validation    PASS   12 cols, 381,109 rows
+  Missing Values       PASS   0 missing
+  Class Balance        WARN   12.26% positive rate
+  Duplicate IDs        PASS   0 duplicates
+  Range Violations     PASS   0 violations
+  Suspicious Patterns  WARN   10,320 premium outliers, 92 sparse channels
+  Overall Score        100/100`,
+
+        clear: '__CLEAR__',
+        'exit': '__EXIT__',
+        'exit 0': '__EXIT__',
+        sudo: 'Nice try. Permission denied.',
+        matrix: '__MATRIX__',
+        reboot: '__REBOOT__',
+    };
+
+    cliInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const cmd = cliInput.value.trim().toLowerCase();
+            cliInput.value = '';
+
+            if (!cmd) return;
+
+            if (cmd === 'cd demo') {
+                window.open('https://huggingface.co/spaces/architechs/insurance-reshopping-predictor', '_blank');
+                showOutput('Opening demo...');
+                return;
+            }
+
+            const result = CLI_COMMANDS[cmd];
+
+            if (result === '__CLEAR__') {
+                cliOutput.textContent = '';
+                return;
+            }
+            if (result === '__EXIT__') {
+                showOutput('Goodbye! Redirecting to portfolio...');
+                setTimeout(() => window.location.href = 'https://archit-konde.github.io/', 4500);
+                return;
+            }
+            if (result === '__MATRIX__') {
+                toggleMatrix();
+                showOutput(document.body.classList.contains('matrix-theme') ? 'Matrix mode: ON' : 'Matrix mode: OFF');
+                return;
+            }
+            if (result === '__REBOOT__') {
+                showOutput('Rebooting system...');
+                setTimeout(() => {
+                    sessionStorage.removeItem('boot-seen');
+                    document.body.style.opacity = '0';
+                    setTimeout(() => location.reload(), 500);
+                }, 1000);
+                return;
+            }
+
+            if (result) {
+                showOutput(`$ ${cmd}\n${result}`);
+            } else {
+                showOutput(`$ ${cmd}\ncommand not found: ${cmd}. Type 'help' for available commands.`);
+            }
+        }
+    });
+
+    function showOutput(text) {
+        if (outputTimer) clearTimeout(outputTimer);
+        cliOutput.textContent = text;
+        const delay = text.includes('Goodbye') ? 4500 : 2500;
+        outputTimer = setTimeout(() => { cliOutput.textContent = ''; }, delay);
+    }
+
+    /* ═══════════════════════════════════════════════
+       Command Palette (Ctrl+K / Cmd+K)
+       ═══════════════════════════════════════════════ */
+    const cmdOverlay = document.getElementById('cmd-overlay');
+    const cmdSearch = document.getElementById('cmd-search');
+    const cmdResults = document.getElementById('cmd-results');
+
+    const PALETTE_COMMANDS = [
+        { icon: '->', label: 'Launch demo', hint: 'HF Spaces', action: () => window.open('https://huggingface.co/spaces/architechs/insurance-reshopping-predictor', '_blank') },
+        { icon: './', label: 'View GitHub', hint: 'source code', action: () => window.open('https://github.com/Archit-Konde/insurance-reshopping-predictor', '_blank') },
+        { icon: '>_', label: 'Read writeup', hint: 'blog post', action: () => window.location.href = 'https://archit-konde.github.io/pages/blog/insurance-reshopping-predictor.html' },
+        { icon: '<-', label: 'Back to portfolio', hint: 'home', action: () => window.location.href = 'https://archit-konde.github.io/' },
+        { icon: '[]', label: 'View docs', hint: 'architecture', action: () => document.querySelector('.section').scrollIntoView({ behavior: 'smooth' }) },
+        { icon: '#', label: 'View tech stack', hint: 'dependencies', action: () => { closePalette(); cliInput.focus(); cliInput.value = 'cat stack'; cliInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })); } },
+    ];
+
+    const EASTER_EGGS = {
+        sudo: 'Nice try. Permission denied.',
+        help: '__HELP__',
+        matrix: '__MATRIX_PALETTE__',
+        archit: 'Lead ML Engineer / Researcher',
+        reboot: '__REBOOT_PALETTE__',
+    };
+
+    function togglePalette() {
+        const isOpen = cmdOverlay.classList.contains('active');
+        if (isOpen) { closePalette(); } else { openPalette(); }
+    }
+
+    function openPalette(initialQuery) {
+        cmdOverlay.classList.add('active');
+        cmdSearch.value = initialQuery || '';
+        cmdSearch.focus();
+        renderPaletteResults(initialQuery || '');
+    }
+
+    function closePalette() {
+        cmdOverlay.classList.remove('active');
+        cmdSearch.value = '';
+    }
+
+    function renderPaletteResults(query) {
+        cmdResults.innerHTML = '';
+        const q = query.toLowerCase().trim();
+
+        // Easter eggs
+        if (q && EASTER_EGGS[q] !== undefined) {
+            const egg = EASTER_EGGS[q];
+
+            if (egg === '__HELP__') {
+                cmdResults.innerHTML = `
+                    <div class="cmd-easter">Shortcuts: Ctrl+K (palette) | Type 'matrix' anywhere | Konami code for rainbow</div>
+                    <div class="cmd-item" onclick="toggleMatrix(); closePalette();">
+                        <span class="cmd-icon">[!]</span>
+                        <span class="cmd-label">Toggle matrix mode</span>
+                    </div>`;
+                return;
+            }
+            if (egg === '__MATRIX_PALETTE__') {
+                cmdResults.innerHTML = `<div class="cmd-easter">Follow the white rabbit...</div>
+                    <div class="cmd-item" onclick="toggleMatrix(); closePalette();">
+                        <span class="cmd-icon">[!]</span>
+                        <span class="cmd-label">Toggle matrix mode</span>
+                    </div>`;
+                return;
+            }
+            if (egg === '__REBOOT_PALETTE__') {
+                cmdResults.innerHTML = `<div class="cmd-easter">Rebooting system...</div>`;
+                setTimeout(() => {
+                    closePalette();
+                    sessionStorage.removeItem('boot-seen');
+                    document.body.style.opacity = '0';
+                    setTimeout(() => location.reload(), 500);
+                }, 1000);
+                return;
+            }
+            cmdResults.innerHTML = `<div class="cmd-easter">${egg}</div>`;
+            return;
+        }
+
+        // Filter commands
+        const filtered = PALETTE_COMMANDS.filter(cmd =>
+            !q || cmd.label.toLowerCase().includes(q) || cmd.hint.toLowerCase().includes(q)
+        );
+
+        filtered.forEach((cmd, i) => {
+            const item = document.createElement('div');
+            item.className = 'cmd-item' + (i === 0 ? ' selected' : '');
+            item.innerHTML = `<span class="cmd-icon">${cmd.icon}</span><span class="cmd-label">${cmd.label}</span><span class="cmd-hint">${cmd.hint}</span>`;
+            item.onclick = () => { cmd.action(); closePalette(); };
+            cmdResults.appendChild(item);
+        });
+    }
+
+    cmdSearch.addEventListener('input', () => renderPaletteResults(cmdSearch.value));
+
+    cmdSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { closePalette(); return; }
+        if (e.key === 'Enter') {
+            const selected = cmdResults.querySelector('.cmd-item.selected');
+            if (selected) selected.click();
+        }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const items = [...cmdResults.querySelectorAll('.cmd-item')];
+            if (!items.length) return;
+            const current = items.findIndex(i => i.classList.contains('selected'));
+            items.forEach(i => i.classList.remove('selected'));
+            const next = e.key === 'ArrowDown'
+                ? (current + 1) % items.length
+                : (current - 1 + items.length) % items.length;
+            items[next].classList.add('selected');
+            items[next].scrollIntoView({ block: 'nearest' });
+        }
+    });
+
+    cmdOverlay.addEventListener('click', (e) => {
+        if (e.target === cmdOverlay) closePalette();
+    });
+
+    // Ctrl+K / Cmd+K
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            togglePalette();
+        }
+        if (e.key === 'Escape' && cmdOverlay.classList.contains('active')) {
+            closePalette();
+        }
+    });
+
+    /* ═══════════════════════════════════════════════
+       Matrix Theme Toggle
+       ═══════════════════════════════════════════════ */
+    function toggleMatrix() {
+        document.body.classList.toggle('matrix-theme');
+    }
+
+    /* ═══════════════════════════════════════════════
+       Keyboard Sequence Buffer
+       ═══════════════════════════════════════════════ */
+    let keyBuffer = '';
+    let keyTimer = null;
+
+    document.addEventListener('keydown', (e) => {
+        // Don't capture when focused on inputs
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        // Space → toggle palette
+        if (e.key === ' ') {
+            e.preventDefault();
+            togglePalette();
+            return;
+        }
+
+        if (e.key.length === 1) {
+            keyBuffer += e.key.toLowerCase();
+            clearTimeout(keyTimer);
+            keyTimer = setTimeout(() => {
+                if (keyBuffer === 'matrix') toggleMatrix();
+                if (keyBuffer === 'help') openPalette('help');
+                if (keyBuffer === 'archit') openPalette('archit');
+                keyBuffer = '';
+            }, 350);
+        }
+    });
+
+    /* ═══════════════════════════════════════════════
+       Konami Code
+       ═══════════════════════════════════════════════ */
+    const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+    let konamiIdx = 0;
+    const RAINBOW = ['#ff0000','#ff7700','#ffff00','#00ff00','#0077ff','#8800ff'];
+    let rainbowIdx = 0;
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === KONAMI[konamiIdx]) {
+            konamiIdx++;
+            if (konamiIdx === KONAMI.length) {
+                konamiIdx = 0;
+                rainbowIdx = (rainbowIdx + 1) % RAINBOW.length;
+                document.documentElement.style.setProperty('--accent', RAINBOW[rainbowIdx]);
+            }
+        } else {
+            konamiIdx = 0;
+        }
+    });
+
+    /* ═══════════════════════════════════════════════
+       Console Easter Egg
+       ═══════════════════════════════════════════════ */
+    console.log('%c Insurance Re-Shopping Predictor ', 'background: #C9A84C; color: #1e1e1e; font-size: 16px; padding: 8px; font-family: JetBrains Mono, monospace; font-weight: bold;');
+    console.log('%c Stack: Python + LightGBM + SHAP + Streamlit ', 'color: #858585; font-family: JetBrains Mono, monospace;');
+    console.log('%c GitHub: https://github.com/Archit-Konde/insurance-reshopping-predictor ', 'color: #858585; font-family: JetBrains Mono, monospace;');
+    console.log('%c Hint: Try Ctrl+K for the command palette, or the Konami code for a surprise ', 'color: #C9A84C; font-family: JetBrains Mono, monospace;');
+    </script>
+</body>
+</html>
