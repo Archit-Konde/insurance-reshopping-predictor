@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
 
-Predicts whether you'd benefit from re-shopping your car insurance — using ML trained on 381K real insurance profiles. Built as a portfolio project for the Jerry.ai Junior Applied Data Scientist role, whose core product (PriceProtect) predicts when customers should re-shop their insurance. This project demonstrates the same capability end-to-end: data quality analysis, feature engineering, LightGBM classification, and SHAP-powered explainability.
+Predicts whether you'd benefit from re-shopping your car insurance — using ML trained on 381K real insurance profiles. An end-to-end ML project covering data quality analysis, feature engineering, LightGBM classification, and SHAP-powered explainability. The focus is on treating data validation as the primary engineering concern, not just model accuracy.
 
 ## Data Quality First
 
@@ -62,7 +62,7 @@ graph LR
 
 ## Why LightGBM
 
-LightGBM is the industry standard for tabular insurance data. It handles class imbalance natively via `class_weight='balanced'`, trains fast on 380K+ rows, supports native categorical features, and is fully compatible with SHAP's TreeExplainer for exact Shapley value computation. Every major insurance ML team (including Jerry.ai's) uses gradient-boosted trees as their baseline.
+LightGBM is the industry standard for tabular insurance data. It handles class imbalance natively via `class_weight='balanced'`, trains fast on 380K+ rows, supports native categorical features, and is fully compatible with SHAP's TreeExplainer for exact Shapley value computation. Gradient-boosted trees are the go-to baseline for insurance tabular ML.
 
 ## Data Quality Decisions
 
