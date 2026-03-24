@@ -1,11 +1,9 @@
 ---
 title: Insurance Re-Shopping Predictor
-emoji: $
+emoji: 🛡️
 colorFrom: yellow
 colorTo: gray
-sdk: streamlit
-sdk_version: 1.40.2
-app_file: app/app.py
+sdk: docker
 pinned: false
 license: mit
 ---

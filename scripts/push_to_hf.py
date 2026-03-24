@@ -25,7 +25,7 @@ def push():
 
     print(f"Pushing to https://huggingface.co/spaces/{REPO_ID}")
 
-    # Upload the entire project
+    # Upload the entire project (including models and data for the app to work)
     upload_folder(
         folder_path=PROJECT_ROOT,
         repo_id=REPO_ID,
@@ -35,11 +35,12 @@ def push():
             ".github/*",
             "docs/*",
             "notebooks/*",
-            "data/raw/*",
             "hf_readme.md",
             "scripts/push_to_hf.py",
             "__pycache__/*",
             "*.pyc",
+            "data/raw/test.csv",
+            "data/raw/sample_submission.csv",
         ],
     )
 
