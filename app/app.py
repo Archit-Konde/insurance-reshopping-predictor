@@ -112,34 +112,37 @@ with tab1:
         with col_input:
             input_data = render_input_form()
 
+        # Store prediction results in session state to prevent jitter on rerender
+        if input_data is not None:
+            input_df = preprocess_single_input(input_data, pipeline=pipeline)
+            feature_names = pipeline["feature_columns"]
+
+            probability = float(model.predict_proba(input_df)[:, 1][0])
+            explanation = get_shap_values(model, input_df)
+            fig = get_waterfall_figure(model, input_df, feature_names, explanation=explanation)
+            factors = get_top_factors(model, input_df, feature_names, n=3, explanation=explanation)
+            tip = get_counterfactual(model, input_df, feature_names, explanation=explanation)
+
+            st.session_state["prediction"] = {
+                "probability": probability,
+                "fig": fig,
+                "factors": factors,
+                "tip": tip,
+            }
+
         with col_results:
-            if input_data is not None:
-                # Preprocess (pass pipeline to avoid reloading from disk)
-                input_df = preprocess_single_input(input_data, pipeline=pipeline)
-                feature_names = pipeline["feature_columns"]
+            if "prediction" in st.session_state:
+                pred = st.session_state["prediction"]
 
-                # Predict
-                probability = float(model.predict_proba(input_df)[:, 1][0])
+                render_probability_gauge(pred["probability"])
 
-                # Display results
-                render_probability_gauge(probability)
-
-                # Compute SHAP once, reuse for all explanations
-                explanation = get_shap_values(model, input_df)
-
-                # SHAP waterfall
                 st.markdown("#### SHAP Explanation")
-                fig = get_waterfall_figure(model, input_df, feature_names, explanation=explanation)
-                st.pyplot(fig)
-                plt.close(fig)
+                st.pyplot(pred["fig"])
+                plt.close(pred["fig"])
 
-                # Top factors
-                factors = get_top_factors(model, input_df, feature_names, n=3, explanation=explanation)
-                render_top_factors(factors)
+                render_top_factors(pred["factors"])
 
-                # Counterfactual
-                tip = get_counterfactual(model, input_df, feature_names, explanation=explanation)
-                render_counterfactual(tip)
+                render_counterfactual(pred["tip"])
             else:
                 st.markdown(
                     """
