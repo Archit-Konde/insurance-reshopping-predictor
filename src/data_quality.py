@@ -42,7 +42,7 @@ SQL-style validation queries (for reviewers who think in SQL):
 """
 
 import os
-import numpy as np
+
 import pandas as pd
 
 
@@ -200,8 +200,7 @@ class DataQualityReport:
             violations["Vintage_negative"] = vintage_neg
 
         if "Driving_License" in df.columns:
-            invalid_dl = int(~df["Driving_License"].isin([0, 1]).sum() if df["Driving_License"].isin([0, 1]).all() else (~df["Driving_License"].isin([0, 1])).sum())
-            violations["Driving_License_invalid"] = invalid_dl
+            violations["Driving_License_invalid"] = int((~df["Driving_License"].isin([0, 1])).sum())
 
         return violations
 

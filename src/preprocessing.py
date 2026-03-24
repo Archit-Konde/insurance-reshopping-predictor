@@ -218,19 +218,21 @@ def run_preprocessing_pipeline(df: pd.DataFrame, save_dir: str = "models"):
     }
 
 
-def preprocess_single_input(input_dict: dict, pipeline_path: str = "models/preprocessing_pipeline.pkl"):
+def preprocess_single_input(input_dict: dict, pipeline=None, pipeline_path: str = "models/preprocessing_pipeline.pkl"):
     """Preprocess a single user input for prediction.
 
     Used by the Streamlit app to transform form inputs into model-ready features.
 
     Args:
         input_dict: Dictionary with raw feature values from the form.
-        pipeline_path: Path to the saved preprocessing pipeline.
+        pipeline: Pre-loaded pipeline dict (avoids disk read on every call).
+        pipeline_path: Fallback path if pipeline is not provided.
 
     Returns:
         DataFrame with one row of preprocessed features.
     """
-    pipeline = joblib.load(pipeline_path)
+    if pipeline is None:
+        pipeline = joblib.load(pipeline_path)
     scaler = pipeline["scaler"]
 
     df = pd.DataFrame([input_dict])

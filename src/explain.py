@@ -63,18 +63,20 @@ def get_shap_values(model, input_df):
     return shap_values
 
 
-def get_waterfall_figure(model, input_df, feature_names):
+def get_waterfall_figure(model, input_df, feature_names, explanation=None):
     """Generate a SHAP waterfall chart for a single prediction.
 
     Args:
         model: Trained LightGBM model.
         input_df: Single-row preprocessed DataFrame.
         feature_names: List of feature column names.
+        explanation: Pre-computed SHAP explanation (avoids recomputation).
 
     Returns:
         matplotlib Figure object.
     """
-    explanation = get_shap_values(model, input_df)
+    if explanation is None:
+        explanation = get_shap_values(model, input_df)
 
     # Use human-readable labels
     display_names = [FEATURE_LABELS.get(f, f) for f in feature_names]
@@ -89,7 +91,7 @@ def get_waterfall_figure(model, input_df, feature_names):
     return fig
 
 
-def get_top_factors(model, input_df, feature_names, n=3):
+def get_top_factors(model, input_df, feature_names, n=3, explanation=None):
     """Get the top N contributing factors in plain English.
 
     Args:
@@ -97,11 +99,13 @@ def get_top_factors(model, input_df, feature_names, n=3):
         input_df: Single-row preprocessed DataFrame.
         feature_names: List of feature column names.
         n: Number of top factors to return.
+        explanation: Pre-computed SHAP explanation (avoids recomputation).
 
     Returns:
         List of dicts with keys: feature, direction, magnitude, plain_english.
     """
-    explanation = get_shap_values(model, input_df)
+    if explanation is None:
+        explanation = get_shap_values(model, input_df)
     shap_vals = explanation[0].values
 
     # Sort by absolute magnitude
@@ -135,7 +139,7 @@ def get_top_factors(model, input_df, feature_names, n=3):
     return factors
 
 
-def get_counterfactual(model, input_df, feature_names):
+def get_counterfactual(model, input_df, feature_names, explanation=None):
     """Find the single most actionable change to move the score.
 
     Looks only at actionable features (things the user could realistically
@@ -145,11 +149,13 @@ def get_counterfactual(model, input_df, feature_names):
         model: Trained LightGBM model.
         input_df: Single-row preprocessed DataFrame.
         feature_names: List of feature column names.
+        explanation: Pre-computed SHAP explanation (avoids recomputation).
 
     Returns:
         String with the counterfactual suggestion.
     """
-    explanation = get_shap_values(model, input_df)
+    if explanation is None:
+        explanation = get_shap_values(model, input_df)
     shap_vals = explanation[0].values
 
     # Find the actionable feature with the largest negative SHAP value

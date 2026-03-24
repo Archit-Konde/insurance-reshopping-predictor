@@ -10,6 +10,7 @@ import os
 import sys
 
 import joblib
+import matplotlib.pyplot as plt
 import streamlit as st
 
 # Add project root to path for imports
@@ -22,7 +23,7 @@ from app.components.results_panel import (
     render_top_factors,
 )
 from app.components.quality_tab import render_quality_tab
-from src.explain import get_counterfactual, get_top_factors, get_waterfall_figure
+from src.explain import get_counterfactual, get_shap_values, get_top_factors, get_waterfall_figure
 from src.preprocessing import preprocess_single_input
 
 
@@ -113,8 +114,8 @@ with tab1:
 
         with col_results:
             if input_data is not None:
-                # Preprocess
-                input_df = preprocess_single_input(input_data)
+                # Preprocess (pass pipeline to avoid reloading from disk)
+                input_df = preprocess_single_input(input_data, pipeline=pipeline)
                 feature_names = pipeline["feature_columns"]
 
                 # Predict
@@ -123,17 +124,21 @@ with tab1:
                 # Display results
                 render_probability_gauge(probability)
 
+                # Compute SHAP once, reuse for all explanations
+                explanation = get_shap_values(model, input_df)
+
                 # SHAP waterfall
                 st.markdown("#### SHAP Explanation")
-                fig = get_waterfall_figure(model, input_df, feature_names)
+                fig = get_waterfall_figure(model, input_df, feature_names, explanation=explanation)
                 st.pyplot(fig)
+                plt.close(fig)
 
                 # Top factors
-                factors = get_top_factors(model, input_df, feature_names, n=3)
+                factors = get_top_factors(model, input_df, feature_names, n=3, explanation=explanation)
                 render_top_factors(factors)
 
                 # Counterfactual
-                tip = get_counterfactual(model, input_df, feature_names)
+                tip = get_counterfactual(model, input_df, feature_names, explanation=explanation)
                 render_counterfactual(tip)
             else:
                 st.markdown(

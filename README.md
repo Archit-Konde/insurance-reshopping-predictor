@@ -18,7 +18,7 @@ This project treats **data quality as the primary engineering concern**, not mod
 | Duplicate IDs | PASS | 0 duplicates |
 | Range Violations | PASS | 0 violations |
 | Suspicious Patterns | WARN | Premium outliers detected, sparse channels flagged |
-| **Overall Quality Score** | **100/100** | Weighted composite |
+| **Overall Quality Score** | **95/100** | Weighted composite |
 
 Every check includes SQL-style validation queries as documentation — because data scientists who think in SQL build more trustworthy pipelines.
 
