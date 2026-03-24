@@ -9,6 +9,8 @@ Two tabs:
 import os
 import sys
 
+from io import BytesIO
+
 import joblib
 import matplotlib.pyplot as plt
 import streamlit as st
@@ -112,7 +114,9 @@ with tab1:
         with col_input:
             input_data = render_input_form()
 
-        # Store prediction results in session state to prevent jitter on rerender
+        # Store prediction results in session state to prevent jitter on rerender.
+        # Save the SHAP chart as a PNG buffer — st.pyplot with a live figure
+        # causes layout recalculation on every Streamlit cycle.
         if input_data is not None:
             input_df = preprocess_single_input(input_data, pipeline=pipeline)
             feature_names = pipeline["feature_columns"]
@@ -123,9 +127,16 @@ with tab1:
             factors = get_top_factors(model, input_df, feature_names, n=3, explanation=explanation)
             tip = get_counterfactual(model, input_df, feature_names, explanation=explanation)
 
+            # Render figure to static PNG bytes
+            buf = BytesIO()
+            fig.savefig(buf, format="png", dpi=150, bbox_inches="tight",
+                        facecolor="#1e1e1e", edgecolor="none")
+            plt.close(fig)
+            buf.seek(0)
+
             st.session_state["prediction"] = {
                 "probability": probability,
-                "fig": fig,
+                "shap_png": buf.getvalue(),
                 "factors": factors,
                 "tip": tip,
             }
@@ -137,8 +148,7 @@ with tab1:
                 render_probability_gauge(pred["probability"])
 
                 st.markdown("#### SHAP Explanation")
-                st.pyplot(pred["fig"])
-                plt.close(pred["fig"])
+                st.image(pred["shap_png"], use_container_width=True)
 
                 render_top_factors(pred["factors"])
 
