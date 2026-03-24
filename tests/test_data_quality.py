@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.data_quality import DataQualityReport, EXPECTED_COLUMNS
+from src.data_quality import DataQualityReport  # noqa: F401 EXPECTED_COLUMNS used indirectly via schema
 
 
 @pytest.fixture

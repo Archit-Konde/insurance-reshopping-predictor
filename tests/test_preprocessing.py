@@ -9,10 +9,6 @@ from src.preprocessing import (
     scale_features,
     apply_smote,
     split_data,
-    GENDER_MAP,
-    VEHICLE_AGE_MAP,
-    VEHICLE_DAMAGE_MAP,
-    FEATURE_COLUMNS,
 )
 
 

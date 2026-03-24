@@ -261,7 +261,7 @@ def main():
     print(f"Loaded {len(df):,} rows\n")
 
     result = run_preprocessing_pipeline(df)
-    print(f"\nPreprocessing complete.")
+    print("\nPreprocessing complete.")
     print(f"Features: {result['feature_columns']}")
 
 

@@ -16,15 +16,15 @@ import streamlit as st
 # Add project root to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from app.components.input_form import render_input_form
-from app.components.results_panel import (
+from app.components.input_form import render_input_form  # noqa: E402
+from app.components.results_panel import (  # noqa: E402
     render_counterfactual,
     render_probability_gauge,
     render_top_factors,
 )
-from app.components.quality_tab import render_quality_tab
-from src.explain import get_counterfactual, get_shap_values, get_top_factors, get_waterfall_figure
-from src.preprocessing import preprocess_single_input
+from app.components.quality_tab import render_quality_tab  # noqa: E402
+from src.explain import get_counterfactual, get_shap_values, get_top_factors, get_waterfall_figure  # noqa: E402
+from src.preprocessing import preprocess_single_input  # noqa: E402
 
 
 st.set_page_config(

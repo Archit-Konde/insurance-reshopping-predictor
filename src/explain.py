@@ -11,8 +11,8 @@ for tree-based models. Provides:
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import shap
+import matplotlib.pyplot as plt  # noqa: E402
+import shap  # noqa: E402
 
 
 # Human-readable feature names for the UI
