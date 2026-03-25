@@ -24,11 +24,14 @@ Every check includes SQL-style validation queries as documentation — because d
 
 ## Architecture
 
-```
-raw CSV → DataQualityReport → Preprocessing → LightGBM → SHAP → Streamlit App
-            8 checks           encode/scale    classifier   explainer   score + chart
-            SQL queries        SMOTE (train)                            factors + tips
-```
+| Stage | Component | Details |
+|-------|-----------|---------|
+| 1 | raw CSV | 381K rows, 12 columns |
+| 2 | DataQualityReport | 8 checks, SQL queries, quality score |
+| 3 | Preprocessing | encode, scale, log transform, SMOTE (train only) |
+| 4 | LightGBM | classifier with GridSearchCV tuning |
+| 5 | SHAP | TreeExplainer for feature attribution |
+| 6 | Streamlit App | probability score, waterfall chart, top factors, counterfactual tips |
 
 ## Key Findings from EDA
 
