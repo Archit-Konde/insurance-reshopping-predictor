@@ -25,21 +25,12 @@ Every check includes SQL-style validation queries as documentation — because d
 ## Architecture
 
 ```mermaid
-graph LR
-    A[raw CSV] --> B[DataQualityReport]
-    B --> C[Preprocessing Pipeline]
-    C --> D[LightGBM Classifier]
-    D --> E[SHAP TreeExplainer]
-    E --> F[Streamlit App]
-
-    C -->|encode + scale| C1[Ordinal Encoding]
-    C -->|log transform| C2[Annual Premium]
-    C -->|train only| C3[SMOTE]
-
-    F --> F1[Probability Score]
-    F --> F2[SHAP Waterfall]
-    F --> F3[Top Factors]
-    F --> F4[Counterfactual Tips]
+flowchart LR
+    A["raw CSV"] --> B["DataQualityReport\n8 checks + SQL queries"]
+    B --> C["Preprocessing\nencode · scale · SMOTE"]
+    C --> D["LightGBM\nClassifier"]
+    D --> E["SHAP\nTreeExplainer"]
+    E --> F["Streamlit App\nscore · chart · tips"]
 ```
 
 ## Key Findings from EDA
